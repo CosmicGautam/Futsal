@@ -1,0 +1,112 @@
+/* HERO */
+.booking-hero {
+  padding: 8rem 0 5rem;
+  background: linear-gradient(
+      rgba(6, 78, 59, 0.95),
+      rgba(6, 78, 59, 0.95)
+    ),
+    url("https://images.unsplash.com/photo-1517927033932-b3d18e61fb3a");
+  background-size: cover;
+  background-position: center;
+  color: white;
+  text-align: center;
+}
+
+.booking-hero h1 {
+  font-size: 3rem;
+  font-weight: 800;
+}
+
+.booking-hero p {
+  margin-top: 1rem;
+  color: #d1fae5;
+}
+
+/* SECTION */
+.booking-section {
+  padding: 6rem 0;
+  background: #f9fafb;
+}
+
+.booking-wrapper {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 2.5rem;
+}
+
+/* CARD */
+.booking-card {
+  background: white;
+  border-radius: 20px;
+  padding: 2rem;
+  border: 1px solid #e5e7eb;
+}
+
+.booking-card h3 {
+  margin-bottom: 1.5rem;
+  color: #065f46;
+}
+
+/* INPUTS */
+.booking-card input,
+.booking-card select {
+  width: 100%;
+  padding: 0.9rem;
+  margin-bottom: 1rem;
+  border-radius: 10px;
+  border: 2px solid #e5e7eb;
+  font-size: 0.95rem;
+}
+
+.booking-card input:focus,
+.booking-card select:focus {
+  outline: none;
+  border-color: #22c55e;
+}
+
+/* SLOTS */
+.slots-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+  gap: 1rem;
+}
+
+.slot {
+  padding: 0.8rem;
+  border-radius: 10px;
+  border: 2px solid #e5e7eb;
+  background: #f9fafb;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.25s ease;
+}
+
+.slot:hover {
+  border-color: #22c55e;
+  background: #ecfdf5;
+}
+
+.slot.selected {
+  background: #065f46;
+  color: white;
+  border-color: #065f46;
+}
+
+.slot.booked {
+  background: #e5e7eb;
+  color: #9ca3af;
+  cursor: not-allowed;
+}
+
+/* FORM */
+.booking-card form button {
+  width: 100%;
+  margin-top: 1rem;
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .booking-hero h1 {
+    font-size: 2.2rem;
+  }
+}

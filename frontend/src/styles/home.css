@@ -1,0 +1,93 @@
+/* HERO */
+.home-hero {
+  height: 90vh;
+  background: linear-gradient(
+      rgba(10, 30, 20, 0.85),
+      rgba(10, 30, 20, 0.85)
+    ),
+    url("https://images.unsplash.com/photo-1606925797300-0b35e9d1794e");
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: center;
+}
+
+.home-hero-content {
+  max-width: 600px;
+  color: white;
+}
+
+.home-hero-content h1 {
+  font-size: 3.5rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.home-hero-content p {
+  margin: 1.5rem 0;
+  font-size: 1.1rem;
+  color: #d1fae5;
+}
+
+.hero-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+/* FEATURES */
+.home-features {
+  padding: 6rem 0;
+  background: #f9fafb;
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 2rem;
+  margin-top: 3rem;
+}
+
+.feature-card {
+  background: white;
+  padding: 2.5rem;
+  border-radius: 18px;
+  text-align: center;
+  transition: all 0.3s ease;
+  border: 1px solid #e5e7eb;
+}
+
+.feature-card span {
+  font-size: 2.5rem;
+}
+
+.feature-card h3 {
+  margin: 1rem 0;
+  font-size: 1.25rem;
+}
+
+.feature-card p {
+  color: #6b7280;
+}
+
+.feature-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
+}
+
+/* CTA */
+.home-cta {
+  padding: 5rem 0;
+  background: linear-gradient(135deg, #064e3b, #16a34a);
+  text-align: center;
+  color: white;
+}
+
+.home-cta h2 {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+.home-cta p {
+  margin-bottom: 2rem;
+  color: #ecfdf5;
+}
