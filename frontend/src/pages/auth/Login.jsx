@@ -1,20 +1,61 @@
+// src/pages/auth/Login.jsx
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { login } from "../../api/auth.api";
+import { useAuth } from "../../context/AuthContext";
 import "../../styles/login.css";
 import Header from "../../components/layout/Header";
 import Footer from "../../components/layout/Footer";
 
 export default function Login() {
-  const [role, setRole] = useState("user");
+  const [formData, setFormData] = useState({
+    email: "",
+    password: ""
+  });
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  
+  const { login: authLogin } = useAuth();
+  const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // later → POST /api/auth/login
-    alert(`Logged in as ${role}`);
+    setError("");
+    setLoading(true);
+
+    try {
+      // Call the API
+      const data = await login(formData.email, formData.password);
+
+      console.log("Login successful:", data);
+
+      // Store auth data
+      authLogin(data);
+
+      // Redirect based on role
+      if (data.role === "admin") {
+        navigate("/admin");
+      } else {
+        navigate("/courts");
+      }
+    } catch (err) {
+      console.error("Login error:", err);
+      setError(err.message || "Invalid credentials. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <>
-      <Header />
+
 
       {/* HERO */}
       <section className="auth-hero">
@@ -30,34 +71,48 @@ export default function Login() {
           <div className="auth-card">
             <h2>Welcome Back</h2>
 
+            {error && (
+              <div className="error-message" style={{
+                background: '#fee2e2',
+                color: '#991b1b',
+                padding: '1rem',
+                borderRadius: '8px',
+                marginBottom: '1rem'
+              }}>
+                {error}
+              </div>
+            )}
+
             <form onSubmit={handleSubmit}>
               <input
                 type="email"
+                name="email"
                 placeholder="Email Address"
+                value={formData.email}
+                onChange={handleChange}
                 required
               />
 
               <input
                 type="password"
+                name="password"
                 placeholder="Password"
+                value={formData.password}
+                onChange={handleChange}
                 required
               />
 
-              <select
-                value={role}
-                onChange={(e) => setRole(e.target.value)}
+              <button 
+                className="btn btn-primary"
+                type="submit"
+                disabled={loading}
               >
-                <option value="user">User</option>
-                <option value="admin">Admin</option>
-              </select>
-
-              <button className="btn btn-primary">
-                Login
+                {loading ? "Logging in..." : "Login"}
               </button>
             </form>
 
             <p className="auth-switch">
-              Don’t have an account? <a href="/register">Register</a>
+              Don't have an account? <a href="/register">Register</a>
             </p>
           </div>
         </div>

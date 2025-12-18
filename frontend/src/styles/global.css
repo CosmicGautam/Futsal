@@ -135,3 +135,13 @@ body {
   padding-top: 1.5rem;
   font-size: 0.9rem;
 }
+
+.logout-btn {
+  background: #dc2626;
+  color: white;
+  border: none;
+}
+
+.logout-btn:hover {
+  background: #b91c1c;
+}

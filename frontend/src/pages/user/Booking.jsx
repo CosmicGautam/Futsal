@@ -1,59 +1,178 @@
-import { useEffect, useState } from "react";
+// src/pages/user/Booking.jsx
+import { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { getCourtById } from "../../api/courts.api";
+import { getSlots, createBooking } from "../../api/booking.api";
+import { useAuth } from "../../context/AuthContext";
 import "../../styles/booking.css";
 import Header from "../../components/layout/Header";
 import Footer from "../../components/layout/Footer";
 
-const TIME_SLOTS = [
-  "08:00", "09:00", "10:00", "11:00",
-  "12:00", "13:00", "14:00", "15:00",
-  "16:00", "17:00", "18:00", "19:00"
-];
-
 export default function Booking() {
-  const [selectedDate, setSelectedDate] = useState(null);
+  const { courtId } = useParams();
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  
+  const [court, setCourt] = useState(null);
+  const [selectedDate, setSelectedDate] = useState("");
   const [selectedSlot, setSelectedSlot] = useState(null);
-  const [bookedSlots, setBookedSlots] = useState([]);
+  const [slots, setSlots] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
-  // TEMP: simulate backend booked slots
+  // Fetch court details
   useEffect(() => {
-    setBookedSlots(["10:00", "14:00"]);
-  }, [selectedDate]);
+    const fetchCourt = async () => {
+      try {
+        const data = await getCourtById(courtId);
+        setCourt(data);
+      } catch (err) {
+        console.error("Fetch court error:", err);
+        setError("Failed to load court details");
+      }
+    };
 
-  const handleBooking = (e) => {
+    if (courtId) {
+      fetchCourt();
+    }
+  }, [courtId]);
+
+  // Fetch slots when date changes
+  useEffect(() => {
+    if (courtId && selectedDate) {
+      fetchSlots();
+    }
+  }, [courtId, selectedDate]);
+
+  const fetchSlots = async () => {
+    setLoading(true);
+    setError("");
+    setSelectedSlot(null); // Reset selected slot when date changes
+
+    try {
+      const data = await getSlots(courtId, selectedDate);
+      setSlots(data);
+    } catch (err) {
+      console.error("Fetch slots error:", err);
+      setError("Failed to load time slots");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleBooking = async (e) => {
     e.preventDefault();
-    if (!selectedDate || !selectedSlot) return;
+    
+    if (!selectedDate || !selectedSlot) {
+      setError("Please select date and time slot");
+      return;
+    }
 
-    alert(
-      `Booking confirmed\nDate: ${selectedDate}\nTime: ${selectedSlot}`
-    );
+    setLoading(true);
+    setError("");
+    setSuccess("");
 
-    // later → POST to backend
+    try {
+      await createBooking({
+        courtId,
+        date: selectedDate,
+        time: selectedSlot,
+      });
+
+      setSuccess(`Booking confirmed for ${selectedDate} at ${selectedSlot}!`);
+      
+      // Refresh slots to show updated availability
+      await fetchSlots();
+      
+      // Clear selection
+      setSelectedSlot(null);
+      
+      // Redirect to My Bookings after 2 seconds
+      setTimeout(() => {
+        navigate("/my-bookings");
+      }, 2000);
+    } catch (err) {
+      console.error("Create booking error:", err);
+      if (err.message?.includes("already booked")) {
+        setError("This slot is already booked. Please choose another time.");
+      } else {
+        setError(err.message || "Failed to create booking. Please try again.");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Get minimum date (today)
+  const getMinDate = () => {
+    const today = new Date();
+    return today.toISOString().split('T')[0];
   };
 
   return (
     <>
-      <Header />
+
 
       {/* HERO */}
       <section className="booking-hero">
         <div className="container">
           <h1>Book Your Court</h1>
-          <p>Select date, time slot, and confirm your match</p>
+          {court && (
+            <div style={{ marginTop: '1rem' }}>
+              <h2 style={{ color: '#10b981', fontSize: '1.5rem' }}>{court.name}</h2>
+              <p>{court.location} • NPR {court.pricePerHour}/hour</p>
+            </div>
+          )}
         </div>
       </section>
 
       {/* BOOKING */}
       <section className="booking-section">
         <div className="container booking-wrapper">
+          
+          {/* Error/Success Messages */}
+          {error && (
+            <div className="booking-card" style={{
+              background: '#fee2e2',
+              color: '#991b1b',
+              padding: '1rem',
+              borderRadius: '8px',
+              marginBottom: '1rem'
+            }}>
+              {error}
+            </div>
+          )}
+
+          {success && (
+            <div className="booking-card" style={{
+              background: '#d1fae5',
+              color: '#065f46',
+              padding: '1rem',
+              borderRadius: '8px',
+              marginBottom: '1rem'
+            }}>
+              {success}
+            </div>
+          )}
 
           {/* DATE */}
           <div className="booking-card">
             <h3>Select Date</h3>
             <input
               type="date"
+              value={selectedDate}
+              min={getMinDate()}
               onChange={(e) => {
                 setSelectedDate(e.target.value);
                 setSelectedSlot(null);
+              }}
+              style={{
+                width: '100%',
+                padding: '0.75rem',
+                borderRadius: '8px',
+                border: '2px solid #e5e7eb',
+                fontSize: '1rem'
               }}
             />
           </div>
@@ -61,52 +180,104 @@ export default function Booking() {
           {/* TIME SLOTS */}
           <div className="booking-card">
             <h3>Available Time Slots</h3>
-            <div className="slots-grid">
-              {TIME_SLOTS.map((slot) => {
-                const isBooked = bookedSlots.includes(slot);
-                const isSelected = slot === selectedSlot;
-
-                return (
-                  <button
-                    key={slot}
-                    disabled={isBooked}
-                    className={`slot 
-                      ${isBooked ? "booked" : ""}
-                      ${isSelected ? "selected" : ""}`}
-                    onClick={() => setSelectedSlot(slot)}
-                  >
-                    {slot}
-                  </button>
-                );
-              })}
-            </div>
+            
+            {!selectedDate ? (
+              <p style={{ color: '#6b7280', textAlign: 'center', padding: '2rem' }}>
+                Please select a date first
+              </p>
+            ) : loading ? (
+              <p style={{ color: '#6b7280', textAlign: 'center', padding: '2rem' }}>
+                Loading available slots...
+              </p>
+            ) : slots.length === 0 ? (
+              <p style={{ color: '#6b7280', textAlign: 'center', padding: '2rem' }}>
+                No slots available for this date
+              </p>
+            ) : (
+              <div className="slots-grid">
+                {slots.map((slot, index) => {
+                  const isBooked = slot.booked;
+                  const isSelected = slot.time === selectedSlot;
+                  
+                  return (
+                    <button
+                      key={index}
+                      disabled={isBooked}
+                      className={`slot 
+                        ${isBooked ? "booked" : ""}
+                        ${isSelected ? "selected" : ""}`}
+                      onClick={() => setSelectedSlot(slot.time)}
+                      style={{
+                        padding: '1rem',
+                        border: isSelected ? '3px solid #10b981' : '2px solid #e5e7eb',
+                        borderRadius: '8px',
+                        background: isBooked ? '#f3f4f6' : isSelected ? '#d1fae5' : 'white',
+                        cursor: isBooked ? 'not-allowed' : 'pointer',
+                        opacity: isBooked ? 0.5 : 1,
+                        fontWeight: '600',
+                        transition: 'all 0.3s'
+                      }}
+                    >
+                      {slot.time}
+                      {isBooked && <div style={{ fontSize: '0.75rem', color: '#ef4444' }}>Booked</div>}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
-          {/* FORM */}
+          {/* BOOKING SUMMARY & CONFIRM */}
           <div className="booking-card">
-            <h3>Player Details</h3>
+            <h3>Booking Summary</h3>
+            
+            <div style={{ marginBottom: '1.5rem' }}>
+              <p><strong>Court:</strong> {court?.name || 'Loading...'}</p>
+              <p><strong>Location:</strong> {court?.location || 'Loading...'}</p>
+              <p><strong>Date:</strong> {selectedDate || 'Not selected'}</p>
+              <p><strong>Time:</strong> {selectedSlot || 'Not selected'}</p>
+              <p><strong>Price:</strong> NPR {court?.pricePerHour || '0'}</p>
+              <p><strong>Player:</strong> {user?.user?.name || user?.user?.email || 'You'}</p>
+            </div>
 
-            <form onSubmit={handleBooking}>
-              <input required placeholder="Full Name" />
-              <input required placeholder="Phone Number" />
-              <input required type="email" placeholder="Email" />
+            <button
+              className="btn btn-primary"
+              onClick={handleBooking}
+              disabled={!selectedDate || !selectedSlot || loading}
+              style={{
+                width: '100%',
+                padding: '1rem',
+                background: (!selectedDate || !selectedSlot || loading) ? '#9ca3af' : '#10b981',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                fontSize: '1rem',
+                fontWeight: '600',
+                cursor: (!selectedDate || !selectedSlot || loading) ? 'not-allowed' : 'pointer',
+                transition: 'background 0.3s'
+              }}
+            >
+              {loading ? 'Processing...' : 'Confirm Booking'}
+            </button>
 
-              <select required>
-                <option value="">Select Court</option>
-                <option>Indoor Arena</option>
-                <option>Outdoor Pitch</option>
-                <option>Training Court</option>
-              </select>
-
-              <button
-                className="btn btn-primary"
-                disabled={!selectedDate || !selectedSlot}
-              >
-                Confirm Booking
-              </button>
-            </form>
+            <button
+              onClick={() => navigate('/courts')}
+              style={{
+                width: '100%',
+                padding: '0.75rem',
+                marginTop: '1rem',
+                background: 'transparent',
+                color: '#6b7280',
+                border: '2px solid #e5e7eb',
+                borderRadius: '8px',
+                fontSize: '1rem',
+                fontWeight: '600',
+                cursor: 'pointer'
+              }}
+            >
+              Back to Courts
+            </button>
           </div>
-
         </div>
       </section>
 

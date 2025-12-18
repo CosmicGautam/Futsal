@@ -11,7 +11,7 @@ export default function Contact() {
 
   return (
     <>
-      <Header />
+
 
       {/* HERO */}
       <section className="contact-hero">

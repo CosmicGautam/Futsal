@@ -2,15 +2,20 @@ import Booking from "../models/Booking.model.js";
 import { generateSlots } from "../utils/generateSlots.js";
 
 export const getSlots = async (req, res) => {
-  const { courtId, date } = req.query;
-  const booked = await Booking.find({ court: courtId, date });
+  try {
+    const { courtId, date } = req.query;
+    const booked = await Booking.find({ court: courtId, date });
 
-  const slots = generateSlots().map(slot => ({
-    time: slot,
-    booked: booked.some(b => b.timeSlot === slot)
-  }));
+    const slots = generateSlots().map(slot => ({
+      time: slot,
+      booked: booked.some(b => b.timeSlot === slot)
+    }));
 
-  res.json(slots);
+    res.json(slots);
+  } catch (error) {
+    console.error("Get slots error:", error);
+    res.status(500).json({ message: "Error fetching slots" });
+  }
 };
 
 export const createBooking = async (req, res) => {
@@ -23,8 +28,61 @@ export const createBooking = async (req, res) => {
       date,
       timeSlot: time
     });
-    res.json(booking);
-  } catch {
+    res.status(201).json(booking);
+  } catch (error) {
+    console.error("Create booking error:", error);
     res.status(409).json({ message: "Slot already booked" });
+  }
+};
+
+export const getUserBookings = async (req, res) => {
+  try {
+    const bookings = await Booking.find({ user: req.user.id })
+      .populate('court')
+      .sort({ date: -1 });
+    res.json(bookings);
+  } catch (error) {
+    console.error("Get user bookings error:", error);
+    res.status(500).json({ message: "Error fetching bookings" });
+  }
+};
+
+// backend/src/controllers/booking.controller.js
+// ADD THIS FUNCTION to your booking.controller.js
+
+// Get all bookings (admin only)
+export const getAllBookings = async (req, res) => {
+  try {
+    const bookings = await Booking.find()
+      .populate('user', 'name email')
+      .populate('court')
+      .sort({ date: -1 });
+    
+    console.log(`📊 Admin fetched ${bookings.length} total bookings`);
+    res.json(bookings);
+  } catch (error) {
+    console.error("Get all bookings error:", error);
+    res.status(500).json({ message: "Error fetching bookings" });
+  }
+};
+
+export const cancelBooking = async (req, res) => {
+  try {
+    const booking = await Booking.findById(req.params.id);
+    
+    if (!booking) {
+      return res.status(404).json({ message: "Booking not found" });
+    }
+    
+    // Check if user owns this booking or is admin
+    if (booking.user.toString() !== req.user.id && req.user.role !== 'admin') {
+      return res.status(403).json({ message: "Not authorized" });
+    }
+    
+    await booking.deleteOne();
+    res.json({ message: "Booking cancelled successfully" });
+  } catch (error) {
+    console.error("Cancel booking error:", error);
+    res.status(500).json({ message: "Error cancelling booking" });
   }
 };

@@ -5,7 +5,7 @@ import Footer from "../../components/layout/Footer";
 export default function About() {
   return (
     <>
-      <Header />
+
 
       {/* HERO */}
       <section className="about-hero">
