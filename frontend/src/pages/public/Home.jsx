@@ -15,7 +15,7 @@ export default function Home() {
               Premium futsal courts designed for speed, skill, and passion.
             </p>
             <div className="hero-actions">
-              <a href="/booking" className="btn btn-primary">
+              <a href="/courts" className="btn btn-primary">
                 Book a Court
               </a>
               <a href="/courts" className="btn btn-outline">
@@ -64,7 +64,7 @@ export default function Home() {
         <div className="container">
           <h2>Ready to Play?</h2>
           <p>Book your slot now and own the court.</p>
-          <a href="/booking" className="btn btn-primary">
+          <a href="/about" className="btn btn-primary">
             Get Started
           </a>
         </div>

@@ -79,7 +79,7 @@ export default function About() {
         <div className="container">
           <h2>Ready to Play?</h2>
           <p>Book your court and experience futsal at its finest.</p>
-          <a href="/booking" className="btn btn-primary">
+          <a href="/courts" className="btn btn-primary">
             Book Now
           </a>
         </div>

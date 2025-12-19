@@ -49,7 +49,6 @@ export default function Courts() {
 
   return (
     <>
-      <Header />
 
       {/* HERO */}
       <section className="courts-hero">
